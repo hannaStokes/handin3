@@ -1,18 +1,25 @@
 syntax = "proto3";
 
-package Homework3;
+package handin3;
 
-option go_package = "Homework3/proto";
+option go_package = "handin3/proto";
+
+message SubMessage {
+  string clientName = 1;
+  int64 timestamp = 2;
+}
 
 message ChatMessage {
   string clientName = 1;
-  string message = 2;
+  int64 timestamp = 2;
+  string message = 3;
 }
 
-message     ChatBroadcast {
+message     ChatAccept {
   string serverName = 1;
-  int64 nanoSeconds = 2;
+  int64 timestamp = 2;
 }
-service TimeAsk {
-  rpc AskForTime(AskForTimeMessage) returns (TimeMessage);
+service ChittyChat {
+  rpc Subscribe(SubMessage) returns (stream ChatMessage);
+  rpc Publish(ChatMessage) returns (ChatAccept);
 }
