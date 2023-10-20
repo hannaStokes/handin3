@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"io"
 
 	//"strconv"
 	"strings"
-	"time"
 
 	// this has to be the same as the go.mod module,
 	// followed by the path to the folder the proto file is in.
@@ -23,6 +23,7 @@ import (
 // Same principle as in client. Flags allows for user specific arguments/values
 var clientsName = flag.String("name", "default", "Senders name")
 var serverPort = flag.String("server", "5400", "Tcp server")
+var clientsTime int64 = 0
 
 var server gRPC.ChittyChatClient   //the server
 var ServerConn *grpc.ClientConn //the server connection
@@ -72,9 +73,25 @@ func ConnectToServer() {
 	log.Println("the connection is: ", conn.GetState().String())
 }
 
+func subscribe(client gRPC.ChittyChatClient, r *gRPC.SubMessage) error {
+	
+	stream, _ := client.Subscribe(context.Background(), r)
+	for {
+		res, err:= stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		log.Printf("recieved message %s at timestamp %s", res.Message, res.Timestamp)
+	}
+	return nil
+}
+
 func parseInput() {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Type the amount you wish to increment with here. Type 0 to get the current value")
+	fmt.Println("Type the message you wish to send here")
 	fmt.Println("--------------------")
 
 	//Infinite loop to listen for clients input.
@@ -94,28 +111,23 @@ func parseInput() {
 		}
 
 		//Convert string to int64, return error if the int is larger than 32bit or not a number
-		getTimeNanoSeconds()
+		message := &gRPC.ChatMessage{
+			ClientName: *clientsName,
+			Timestamp: clientsTime,
+			Message: input,
+		}
+	
+		//
+		ack, err := server.Publish(context.Background(), message)
+		if ack.Timestamp>clientsTime {clientsTime=ack.Timestamp}
+		if err != nil {
+			log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
+			log.Println(err)
+		}
 	}
 }
 
-func getTimeNanoSeconds() {
-	//
-	log.Println(time.Now())
-	amount := &gRPC.SubMessage{
-		ClientName: *clientsName,
-	}
 
-	//
-	ack, err := server.Subscribe(context.Background(), amount)
-	if err != nil {
-		log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
-		log.Println(err)
-	}
-
-	//
-	log.Println(time.Unix(0, ack.NanoSeconds))
-
-}
 
 // Function which returns a true boolean if the connection to the server is ready, and false if it's not.
 func conReady(s gRPC.ChittyChatClient) bool {

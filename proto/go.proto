@@ -19,6 +19,7 @@ message     ChatAccept {
   string serverName = 1;
   int64 timestamp = 2;
 }
+
 service ChittyChat {
   rpc Subscribe(SubMessage) returns (stream ChatMessage);
   rpc Publish(ChatMessage) returns (ChatAccept);

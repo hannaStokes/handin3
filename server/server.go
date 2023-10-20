@@ -9,7 +9,6 @@ import (
 	"net"
 	"os"
 	"sync"
-	"time"
 	// this has to be the same as the go.mod module,
 	// followed by the path to the folder the proto file is in.
 	gRPC "github.com/hannaStokes/handin3/proto"
@@ -21,6 +20,7 @@ type Server struct {
 	gRPC.UnimplementedChittyChatServer        // You need this line if you have a server. "ChittyChat" should be the equivalent name of your service
 	name                             string // Not required but useful if you want to name your server
 	port                             string // Not required but useful if your server needs to know what port it's listening to
+	channel							 chan gRPC.ChatMessage
 
 	currentTime int64      // value that clients can increment.
 	mutex          sync.Mutex // used to lock the server to avoid race conditions.
@@ -65,6 +65,7 @@ func launchServer() {
 	server := &Server{
 		name:           *serverName,
 		port:           *port,
+		channel:		make(chan gRPC.ChatMessage),
 		currentTime: 0, // gives default value, but not sure if it is necessary
 	}
 
@@ -79,13 +80,31 @@ func launchServer() {
 }
 
 // The method format can be found in the pb.go file. If the format is wrong, the server type will give an error.
-func (s *Server) Subscribe(ctx context.Context, SubMessage *gRPC.SubMessage) (*gRPC.ChatMessage, error) {
+func (s *Server) Subscribe(in *gRPC.SubMessage, stream gRPC.ChittyChat_SubscribeServer) error {
 	
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	name:= in.ClientName
+	//s.mutex.Lock() ??
+	//lamport time missing
+	time:= in.Timestamp + 1
+	msg:= name + " has subscribed to the chat at timestamp" + string(time)
+	stream.Send(&gRPC.ChatMessage{ClientName: name, Timestamp: time, Message: msg})
+
+	for {
+		var recv = <-s.channel
+		stream.Send(&gRPC.ChatMessage{ClientName: recv.ClientName, Timestamp: recv.Timestamp, Message: recv.Message})
+	//defer s.mutex.Unlock()??
+	}
+
+	return nil
+}
+
+func (s *Server) Publish(ctx context.Context, ChatMessage *gRPC.ChatMessage) (*gRPC.ChatAccept, error) {
+		
+	s.channel <- *ChatMessage
 	
-	s.currentTime = int64(time.Now().Nanosecond())
-	return &gRPC.ChatMessage{ServerName: s.name,NanoSeconds: s.currentTime}, nil
+	name:= s.name
+	timestamp:= ChatMessage.Timestamp+1
+	return &gRPC.ChatAccept{ServerName:name, Timestamp: timestamp}, nil
 }
 
 // Get preferred outbound ip of this machine
