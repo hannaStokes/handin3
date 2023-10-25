@@ -71,7 +71,7 @@ func ConnectToServer() {
 		log.Printf("Fail to Dial : %v", err)
 		return
 	}
-
+	fmt.Printf("Error here")
 	// makes a client from the server connection and saves the connection
 	// and prints rather or not the connection was is READY
 	server = gRPC.NewChittyChatClient(conn)

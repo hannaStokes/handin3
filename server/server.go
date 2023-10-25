@@ -93,13 +93,18 @@ func (s *Server) Subscribe(in *gRPC.SubMessage, stream gRPC.ChittyChat_Subscribe
 	channel := make(chan gRPC.ChatMessage)
 	s.channelList = append(s.channelList, channel)
 
+	go recv(channel, stream)
+	<-stream.Context().Done()
+
+	return nil
+}
+
+func recv (channel chan gRPC.ChatMessage , stream gRPC.ChittyChat_SubscribeServer) {
 	for {
 		var recv = <-channel
 		stream.Send(&gRPC.ChatMessage{ClientName: recv.ClientName, Timestamp: recv.Timestamp, Message: recv.Message})
 		//defer s.mutex.Unlock()??
 	}
-
-	return nil
 }
 
 func (s *Server) Publish(ctx context.Context, ChatMessage *gRPC.ChatMessage) (*gRPC.ChatAccept, error) {
