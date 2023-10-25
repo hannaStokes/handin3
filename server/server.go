@@ -52,7 +52,7 @@ func launchServer() {
 	log.Printf("Server %s: Attempts to create listener on port %s\n", *serverName, *port)
 
 	// Create listener tcp on given port or default port 5400
-	list, err := net.Listen("tcp", fmt.Sprintf("%s", *port))
+	list, err := net.Listen("tcp", fmt.Sprintf(":%s", *port))
 	if err != nil {
 		log.Printf("Server %s: Failed to listen on port %s: %v", *serverName, *port, err) //If it fails to listen on the port, run launchServer method again with the next value/port in ports array
 		return
