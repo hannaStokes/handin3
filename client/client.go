@@ -5,9 +5,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
-	"io"
 
 	//"strconv"
 	"strings"
@@ -25,8 +25,8 @@ var clientsName = flag.String("name", "default", "Senders name")
 var serverPort = flag.String("server", "5400", "Tcp server")
 var clientsTime int64 = 0
 
-var server gRPC.ChittyChatClient   //the server
-var ServerConn *grpc.ClientConn //the server connection
+var server gRPC.ChittyChatClient //the server
+var ServerConn *grpc.ClientConn  //the server connection
 
 func main() {
 	//parse flag/arguments
@@ -42,6 +42,12 @@ func main() {
 	fmt.Println("--- join Server ---")
 	ConnectToServer()
 	defer ServerConn.Close()
+
+	message := &gRPC.SubMessage{
+		ClientName: *clientsName,
+		Timestamp:  clientsTime,
+	}
+	go subscribe(server, message)
 
 	//start the biding
 	parseInput()
@@ -74,17 +80,17 @@ func ConnectToServer() {
 }
 
 func subscribe(client gRPC.ChittyChatClient, r *gRPC.SubMessage) error {
-	
+
 	stream, _ := client.Subscribe(context.Background(), r)
 	for {
-		res, err:= stream.Recv()
+		res, err := stream.Recv()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return err
 		}
-		log.Printf("recieved message %s at timestamp %s", res.Message, res.Timestamp)
+		log.Printf("received message \"%s\" at timestamp %s", res.Message, res.Timestamp)
 	}
 	return nil
 }
@@ -113,21 +119,21 @@ func parseInput() {
 		//Convert string to int64, return error if the int is larger than 32bit or not a number
 		message := &gRPC.ChatMessage{
 			ClientName: *clientsName,
-			Timestamp: clientsTime,
-			Message: input,
+			Timestamp:  clientsTime,
+			Message:    input,
 		}
-	
+
 		//
 		ack, err := server.Publish(context.Background(), message)
-		if ack.Timestamp>clientsTime {clientsTime=ack.Timestamp}
+		if ack.Timestamp > clientsTime {
+			clientsTime = ack.Timestamp
+		}
 		if err != nil {
 			log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
 			log.Println(err)
 		}
 	}
 }
-
-
 
 // Function which returns a true boolean if the connection to the server is ready, and false if it's not.
 func conReady(s gRPC.ChittyChatClient) bool {
