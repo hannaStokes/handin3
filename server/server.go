@@ -52,7 +52,7 @@ func launchServer() {
 	log.Printf("Server %s: Attempts to create listener on port %s\n", *serverName, *port)
 
 	// Create listener tcp on given port or default port 5400
-	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *port))
+	list, err := net.Listen("tcp", fmt.Sprintf("%s", *port))
 	if err != nil {
 		log.Printf("Server %s: Failed to listen on port %s: %v", *serverName, *port, err) //If it fails to listen on the port, run launchServer method again with the next value/port in ports array
 		return
@@ -99,7 +99,7 @@ func (s *Server) Subscribe(in *gRPC.SubMessage, stream gRPC.ChittyChat_Subscribe
 	return nil
 }
 
-func recv (channel chan gRPC.ChatMessage , stream gRPC.ChittyChat_SubscribeServer) {
+func recv(channel chan gRPC.ChatMessage, stream gRPC.ChittyChat_SubscribeServer) {
 	for {
 		var recv = <-channel
 		stream.Send(&gRPC.ChatMessage{ClientName: recv.ClientName, Timestamp: recv.Timestamp, Message: recv.Message})
