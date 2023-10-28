@@ -87,22 +87,29 @@ func (s *Server) Subscribe(in *gRPC.SubMessage, stream gRPC.ChittyChat_Subscribe
 	name := in.ClientName
 	//s.mutex.Lock() ??
 	//lamport time missing
-	time := in.Timestamp + 1
-	msg := name + " has subscribed to the chat at timestamp" + string(time)
-	stream.Send(&gRPC.ChatMessage{ClientName: name, Timestamp: time, Message: msg})
+	if s.currentTime < in.Timestamp {
+		s.currentTime = in.Timestamp
+	}
+	s.currentTime++
+	msg := name + " has subscribed to the chat at timestamp" + string(s.currentTime)
+	stream.Send(&gRPC.ChatMessage{ClientName: name, Timestamp: s.currentTime, Message: msg})
 	channel := make(chan gRPC.ChatMessage)
 	s.channelList = append(s.channelList, channel)
 
-	go recv(channel, stream)
+	go recv(s,channel, stream)
 	<-stream.Context().Done()
-
+	//remove stream from s.channelList and send out "user logged off" message to remaining channels
 	return nil
 }
 
-func recv (channel chan gRPC.ChatMessage , stream gRPC.ChittyChat_SubscribeServer) {
+func recv(s *Server, channel chan gRPC.ChatMessage, stream gRPC.ChittyChat_SubscribeServer) {
 	for {
 		var recv = <-channel
-		stream.Send(&gRPC.ChatMessage{ClientName: recv.ClientName, Timestamp: recv.Timestamp, Message: recv.Message})
+		if s.currentTime < recv.Timestamp {
+			s.currentTime = recv.Timestamp
+		}
+		s.currentTime++
+		stream.Send(&gRPC.ChatMessage{ClientName: recv.ClientName, Timestamp: s.currentTime, Message: recv.Message})
 		//defer s.mutex.Unlock()??
 	}
 }
@@ -113,8 +120,11 @@ func (s *Server) Publish(ctx context.Context, ChatMessage *gRPC.ChatMessage) (*g
 	}
 
 	name := s.name
-	timestamp := ChatMessage.Timestamp + 1
-	return &gRPC.ChatAccept{ServerName: name, Timestamp: timestamp}, nil
+	if s.currentTime < ChatMessage.Timestamp {
+		s.currentTime = ChatMessage.Timestamp
+	}
+	s.currentTime++
+	return &gRPC.ChatAccept{ServerName: name, Timestamp: s.currentTime}, nil
 }
 
 // Get preferred outbound ip of this machine

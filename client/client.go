@@ -90,7 +90,11 @@ func subscribe(client gRPC.ChittyChatClient, r *gRPC.SubMessage) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("received message \"%s\" at timestamp %s", res.Message, res.Timestamp)
+		if res.Timestamp > clientsTime {
+			clientsTime = res.Timestamp
+		}
+		clientsTime++
+		log.Printf("received message \"%s\" from user %s at timestamp %d", res.Message, res.ClientName, res.Timestamp)
 	}
 	return nil
 }
@@ -128,6 +132,7 @@ func parseInput() {
 		if ack.Timestamp > clientsTime {
 			clientsTime = ack.Timestamp
 		}
+		clientsTime++
 		if err != nil {
 			log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
 			log.Println(err)
