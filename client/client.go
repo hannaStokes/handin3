@@ -71,7 +71,7 @@ func ConnectToServer() {
 		log.Printf("Fail to Dial : %v", err)
 		return
 	}
-	fmt.Printf("Error here")
+	//fmt.Printf("Error here")
 	// makes a client from the server connection and saves the connection
 	// and prints rather or not the connection was is READY
 	server = gRPC.NewChittyChatClient(conn)
@@ -80,7 +80,7 @@ func ConnectToServer() {
 }
 
 func subscribe(client gRPC.ChittyChatClient, r *gRPC.SubMessage) error {
-
+	clientsTime++
 	stream, _ := client.Subscribe(context.Background(), r)
 	for {
 		res, err := stream.Recv()
@@ -90,11 +90,8 @@ func subscribe(client gRPC.ChittyChatClient, r *gRPC.SubMessage) error {
 		if err != nil {
 			return err
 		}
-		if res.Timestamp > clientsTime {
-			clientsTime = res.Timestamp
-		}
-		clientsTime++
-		log.Printf("received message \"%s\" from user %s at timestamp %d", res.Message, res.ClientName, res.Timestamp)
+		IncreaseLamport(res.Timestamp)
+		log.Printf("\"%s\" at timestamp %d", res.Message, clientsTime)
 	}
 	return nil
 }
@@ -119,20 +116,17 @@ func parseInput() {
 			log.Printf("Client %s: something was wrong with the connection to the server :(", *clientsName)
 			continue
 		}
-
+		clientsTime++
 		//Convert string to int64, return error if the int is larger than 32bit or not a number
 		message := &gRPC.ChatMessage{
 			ClientName: *clientsName,
 			Timestamp:  clientsTime,
-			Message:    input,
+			Message:    fmt.Sprintf("received message \"%s\" from user %s", input, *clientsName),
 		}
-
 		//
 		ack, err := server.Publish(context.Background(), message)
-		if ack.Timestamp > clientsTime {
-			clientsTime = ack.Timestamp
-		}
-		clientsTime++
+		//IncreaseLamport(ack.TimeStamp)
+		ack.Timestamp++
 		if err != nil {
 			log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
 			log.Println(err)
@@ -153,4 +147,11 @@ func setLog() *os.File {
 	}
 	log.SetOutput(f)
 	return f
+}
+
+func IncreaseLamport(timestamp int64) {
+	if clientsTime < timestamp {
+		clientsTime = timestamp
+	}
+	clientsTime++
 }

@@ -87,43 +87,66 @@ func (s *Server) Subscribe(in *gRPC.SubMessage, stream gRPC.ChittyChat_Subscribe
 	name := in.ClientName
 	//s.mutex.Lock() ??
 	//lamport time missing
-	if s.currentTime < in.Timestamp {
-		s.currentTime = in.Timestamp
-	}
-	s.currentTime++
-	msg := name + " has subscribed to the chat at timestamp" + string(s.currentTime)
-	stream.Send(&gRPC.ChatMessage{ClientName: name, Timestamp: s.currentTime, Message: msg})
+	IncreaseLamport(s, in.Timestamp)
+
 	channel := make(chan gRPC.ChatMessage)
 	s.channelList = append(s.channelList, channel)
 
-	go recv(s,channel, stream)
+	go recv(s, channel, stream)
+
+	msg := fmt.Sprintf("User %s subscribed", name)
+	broadcast(s, gRPC.ChatMessage{ClientName: name, Timestamp: s.currentTime, Message: msg})
 	<-stream.Context().Done()
 	//remove stream from s.channelList and send out "user logged off" message to remaining channels
+	//Locate channel in channelList
+	for i, c := range s.channelList {
+		if c == channel {
+			s.channelList[i] = nil
+			if i == 0 {
+				s.channelList = s.channelList[1:]
+			} else if i == len(s.channelList) {
+				s.channelList = s.channelList[:i]
+			} else {
+				s.channelList = append(s.channelList[:i], s.channelList[i+1:]...)
+			}
+			break
+		}
+	}
+
+	lvmsg := fmt.Sprintf("User %s left the server", name)
+	broadcast(s, gRPC.ChatMessage{ClientName: name, Timestamp: s.currentTime, Message: lvmsg})
 	return nil
+}
+
+func IncreaseLamport(s *Server, timestamp int64) {
+	if s.currentTime < timestamp {
+		s.currentTime = timestamp
+	}
+	s.currentTime++
+}
+
+func broadcast(s *Server, message gRPC.ChatMessage) {
+	s.currentTime++ //receive and send are separate events
+	for _, channel := range s.channelList {
+		channel <- message
+	}
 }
 
 func recv(s *Server, channel chan gRPC.ChatMessage, stream gRPC.ChittyChat_SubscribeServer) {
 	for {
 		var recv = <-channel
-		if s.currentTime < recv.Timestamp {
-			s.currentTime = recv.Timestamp
-		}
-		s.currentTime++
+		//IncreaseLamport(s, recv.Timestamp) already handled in Publish
 		stream.Send(&gRPC.ChatMessage{ClientName: recv.ClientName, Timestamp: s.currentTime, Message: recv.Message})
 		//defer s.mutex.Unlock()??
 	}
 }
 
 func (s *Server) Publish(ctx context.Context, ChatMessage *gRPC.ChatMessage) (*gRPC.ChatAccept, error) {
-	for _, channel := range s.channelList {
-		channel <- *ChatMessage
-	}
 
+	IncreaseLamport(s, ChatMessage.Timestamp)
+	broadcast(s, *ChatMessage)
 	name := s.name
-	if s.currentTime < ChatMessage.Timestamp {
-		s.currentTime = ChatMessage.Timestamp
-	}
-	s.currentTime++
+	//IncreaseLamport(s,ChatMessage.Timestamp)
 	return &gRPC.ChatAccept{ServerName: name, Timestamp: s.currentTime}, nil
 }
 
