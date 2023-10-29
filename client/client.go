@@ -35,8 +35,8 @@ func main() {
 	fmt.Println("--- CLIENT APP ---")
 
 	//log to file instead of console
-	//f := setLog()
-	//defer f.Close()
+	f := setLog()
+	defer f.Close()
 
 	//connect to server and close the connection when program closes
 	fmt.Println("--- join Server ---")
@@ -92,14 +92,14 @@ func subscribe(client gRPC.ChittyChatClient, r *gRPC.SubMessage) error {
 		}
 		IncreaseLamport(res.Timestamp)
 		log.Printf("\"%s\" at timestamp %d", res.Message, clientsTime)
+		fmt.Printf("\"%s\" at timestamp %d\n-> ", res.Message, clientsTime)
 	}
 	return nil
 }
 
 func parseInput() {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Type the message you wish to send here")
-	fmt.Println("--------------------")
+	fmt.Println("Type the message you wish to send below")
 
 	//Infinite loop to listen for clients input.
 	for {
@@ -141,7 +141,7 @@ func conReady(s gRPC.ChittyChatClient) bool {
 
 // sets the logger to use a log.txt file instead of the console
 func setLog() *os.File {
-	f, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("log_"+*clientsName+".txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}

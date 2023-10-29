@@ -35,8 +35,8 @@ var serverName = flag.String("name", "default", "Senders name") // set with "-na
 var port = flag.String("port", "5400", "Server port")           // set with "-port <port>" in terminal
 
 func main() {
-	// f := setLog() //uncomment this line to log to a log.txt file instead of the console
-	// defer f.Close()
+	f := setLog() //uncomment this line to log to a log.txt file instead of the console
+	defer f.Close()
 
 	// This parses the flags and sets the correct/given corresponding values.
 	flag.Parse()
@@ -73,7 +73,7 @@ func launchServer() {
 
 	gRPC.RegisterChittyChatServer(grpcServer, server) //Registers the server to the gRPC server.
 
-	log.Printf("Server %s: Listening at %v\n", *serverName, list.Addr())
+	log.Printf("Server %s: Listening at %v\n\n", *serverName, list.Addr())
 
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to serve %v", err)
@@ -83,18 +83,17 @@ func launchServer() {
 
 // The method format can be found in the pb.go file. If the format is wrong, the server type will give an error.
 func (s *Server) Subscribe(in *gRPC.SubMessage, stream gRPC.ChittyChat_SubscribeServer) error {
-
 	name := in.ClientName
-	//s.mutex.Lock() ??
-	//lamport time missing
+	log.Printf("User: %s is subscribing", name)
 	IncreaseLamport(s, in.Timestamp)
 
 	channel := make(chan gRPC.ChatMessage)
 	s.channelList = append(s.channelList, channel)
-
+	log.Printf("Added channel to list.\n           Number of subscribed clients: %d \n", len(s.channelList))
 	go recv(s, channel, stream)
 
 	msg := fmt.Sprintf("User %s subscribed", name)
+	//log.Printf(msg)
 	broadcast(s, gRPC.ChatMessage{ClientName: name, Timestamp: s.currentTime, Message: msg})
 	<-stream.Context().Done()
 	//remove stream from s.channelList and send out "user logged off" message to remaining channels
@@ -112,20 +111,24 @@ func (s *Server) Subscribe(in *gRPC.SubMessage, stream gRPC.ChittyChat_Subscribe
 			break
 		}
 	}
-
+	
+	log.Printf("Removed channel from list.\n           Number of subscribed clients: %d \n", len(s.channelList))
 	lvmsg := fmt.Sprintf("User %s left the server", name)
 	broadcast(s, gRPC.ChatMessage{ClientName: name, Timestamp: s.currentTime, Message: lvmsg})
 	return nil
 }
 
 func IncreaseLamport(s *Server, timestamp int64) {
+	log.Printf("Comparing Lamport times and adding 1 to max.\n           Server: %d, Client: %d \n", s.currentTime, timestamp)
 	if s.currentTime < timestamp {
 		s.currentTime = timestamp
 	}
 	s.currentTime++
+	//log.Printf("Lamport time is now: %d", s.currentTime)
 }
 
 func broadcast(s *Server, message gRPC.ChatMessage) {
+	log.Printf("Broadcasting message \"%s\" to all users.\n           Increasing Lamport Time %d by 1. \n \n", message.Message, s.currentTime)
 	s.currentTime++ //receive and send are separate events
 	for _, channel := range s.channelList {
 		channel <- message
@@ -134,15 +137,15 @@ func broadcast(s *Server, message gRPC.ChatMessage) {
 
 func recv(s *Server, channel chan gRPC.ChatMessage, stream gRPC.ChittyChat_SubscribeServer) {
 	for {
+		//Don't put logs or prints in here! This is run once for all clients, everytime something is broadcast!
 		var recv = <-channel
 		//IncreaseLamport(s, recv.Timestamp) already handled in Publish
 		stream.Send(&gRPC.ChatMessage{ClientName: recv.ClientName, Timestamp: s.currentTime, Message: recv.Message})
-		//defer s.mutex.Unlock()??
 	}
 }
 
 func (s *Server) Publish(ctx context.Context, ChatMessage *gRPC.ChatMessage) (*gRPC.ChatAccept, error) {
-
+	log.Printf("Message being published")
 	IncreaseLamport(s, ChatMessage.Timestamp)
 	broadcast(s, *ChatMessage)
 	name := s.name
@@ -167,12 +170,12 @@ func GetOutboundIP() net.IP {
 // sets the logger to use a log.txt file instead of the console
 func setLog() *os.File {
 	// Clears the log.txt file when a new server is started
-	if err := os.Truncate("log.txt", 0); err != nil {
+	if err := os.Truncate("serverlog.txt", 0); err != nil {
 		log.Printf("Failed to truncate: %v", err)
 	}
 
 	// This connects to the log file/changes the output of the log informaiton to the log.txt file.
-	f, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("serverlog.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}

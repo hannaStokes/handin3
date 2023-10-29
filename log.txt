@@ -1,0 +1,24 @@
+2023/10/29 14:54:36 Server default: Attempts to create listener on port 5400
+2023/10/29 14:54:36 Server default: Listening at 127.0.0.1:5400
+2023/10/29 14:54:41 User: default is subscribing
+2023/10/29 14:54:41 Comparing Lamport times. Server: 0, Client: 0 
+2023/10/29 14:54:41 Added channel to list. Number of subscribed clients: 1 
+2023/10/29 14:54:41 User default subscribed
+2023/10/29 14:54:41 Broadcasting message "User default subscribed" to all users. Increasing Lamport Time 1 by 1. 
+2023/10/29 14:54:46 User: default is subscribing
+2023/10/29 14:54:46 Comparing Lamport times. Server: 2, Client: 0 
+2023/10/29 14:54:46 Added channel to list. Number of subscribed clients: 2 
+2023/10/29 14:54:46 User default subscribed
+2023/10/29 14:54:46 Broadcasting message "User default subscribed" to all users. Increasing Lamport Time 3 by 1. 
+2023/10/29 14:55:05 Comparing Lamport times. Server: 4, Client: 6 
+2023/10/29 14:55:05 Broadcasting message "received message "Hi" from user default" to all users. Increasing Lamport Time 7 by 1. 
+2023/10/29 14:55:20 Comparing Lamport times. Server: 8, Client: 10 
+2023/10/29 14:55:20 Broadcasting message "received message "H" from user default" to all users. Increasing Lamport Time 11 by 1. 
+2023/10/29 14:55:22 Comparing Lamport times. Server: 12, Client: 14 
+2023/10/29 14:55:22 Broadcasting message "received message "e" from user default" to all users. Increasing Lamport Time 15 by 1. 
+2023/10/29 14:55:23 Comparing Lamport times. Server: 16, Client: 18 
+2023/10/29 14:55:23 Broadcasting message "received message "l" from user default" to all users. Increasing Lamport Time 19 by 1. 
+2023/10/29 14:55:24 Comparing Lamport times. Server: 20, Client: 22 
+2023/10/29 14:55:24 Broadcasting message "received message "l" from user default" to all users. Increasing Lamport Time 23 by 1. 
+2023/10/29 14:55:25 Comparing Lamport times. Server: 24, Client: 26 
+2023/10/29 14:55:25 Broadcasting message "received message "o" from user default" to all users. Increasing Lamport Time 27 by 1. 
