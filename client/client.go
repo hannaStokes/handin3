@@ -100,11 +100,10 @@ func subscribe(client gRPC.ChittyChatClient, r *gRPC.SubMessage) error {
 func parseInput() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Type the message you wish to send below")
+	fmt.Print("-> ")
 
 	//Infinite loop to listen for clients input.
 	for {
-		fmt.Print("-> ")
-
 		//Read input into var input and any errors into err
 		input, err := reader.ReadString('\n')
 		if err != nil {
