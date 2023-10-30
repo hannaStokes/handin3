@@ -42,12 +42,7 @@ func main() {
 	fmt.Println("--- join Server ---")
 	ConnectToServer()
 	defer ServerConn.Close()
-
-	message := &gRPC.SubMessage{
-		ClientName: *clientsName,
-		Timestamp:  clientsTime,
-	}
-	go subscribe(server, message)
+	go subscribe(server)
 
 	//start the biding
 	parseInput()
@@ -79,8 +74,12 @@ func ConnectToServer() {
 	log.Println("the connection is: ", conn.GetState().String())
 }
 
-func subscribe(client gRPC.ChittyChatClient, r *gRPC.SubMessage) error {
+func subscribe(client gRPC.ChittyChatClient) error {
 	clientsTime++
+	r := &gRPC.SubMessage{
+		ClientName: *clientsName,
+		Timestamp:  clientsTime,
+	}
 	stream, _ := client.Subscribe(context.Background(), r)
 	for {
 		res, err := stream.Recv()

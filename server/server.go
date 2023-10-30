@@ -111,7 +111,7 @@ func (s *Server) Subscribe(in *gRPC.SubMessage, stream gRPC.ChittyChat_Subscribe
 			break
 		}
 	}
-	
+
 	log.Printf("Removed channel from list.\n           Number of subscribed clients: %d \n", len(s.channelList))
 	lvmsg := fmt.Sprintf("User %s left the server", name)
 	broadcast(s, gRPC.ChatMessage{ClientName: name, Timestamp: s.currentTime, Message: lvmsg})

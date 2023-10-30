@@ -1,56 +1,56 @@
-2023/10/30 18:36:43 Server chittychatexample: Attempts to create listener on port 5400
-2023/10/30 18:36:43 Server chittychatexample: Listening at 127.0.0.1:5400
+2023/10/30 19:49:33 Server chittychatexample: Attempts to create listener on port 5400
+2023/10/30 19:49:33 Server chittychatexample: Listening at 127.0.0.1:5400
 
-2023/10/30 18:37:07 User: jeppe is subscribing
-2023/10/30 18:37:07 Comparing Lamport times and adding 1 to max.
-           Server: 0, Client: 0 
-2023/10/30 18:37:07 Added channel to list.
+2023/10/30 19:49:45 User: hanna is subscribing
+2023/10/30 19:49:45 Comparing Lamport times and adding 1 to max.
+           Server: 0, Client: 1 
+2023/10/30 19:49:45 Added channel to list.
            Number of subscribed clients: 1 
-2023/10/30 18:37:07 Broadcasting message "User jeppe subscribed" to all users.
-           Increasing Lamport Time 1 by 1. 
+2023/10/30 19:49:45 Broadcasting message "User hanna subscribed" to all users.
+           Increasing Lamport Time 2 by 1. 
  
-2023/10/30 18:37:39 User: oskar is subscribing
-2023/10/30 18:37:39 Comparing Lamport times and adding 1 to max.
-           Server: 2, Client: 0 
-2023/10/30 18:37:39 Added channel to list.
+2023/10/30 19:49:51 User: oskar is subscribing
+2023/10/30 19:49:51 Comparing Lamport times and adding 1 to max.
+           Server: 3, Client: 1 
+2023/10/30 19:49:51 Added channel to list.
            Number of subscribed clients: 2 
-2023/10/30 18:37:39 Broadcasting message "User oskar subscribed" to all users.
-           Increasing Lamport Time 3 by 1. 
+2023/10/30 19:49:51 Broadcasting message "User oskar subscribed" to all users.
+           Increasing Lamport Time 4 by 1. 
  
-2023/10/30 18:38:06 User: hanna is subscribing
-2023/10/30 18:38:06 Comparing Lamport times and adding 1 to max.
-           Server: 4, Client: 0 
-2023/10/30 18:38:06 Added channel to list.
+2023/10/30 19:50:02 User: jeppe is subscribing
+2023/10/30 19:50:02 Comparing Lamport times and adding 1 to max.
+           Server: 5, Client: 1 
+2023/10/30 19:50:02 Added channel to list.
            Number of subscribed clients: 3 
-2023/10/30 18:38:06 Broadcasting message "User hanna subscribed" to all users.
-           Increasing Lamport Time 5 by 1. 
+2023/10/30 19:50:02 Broadcasting message "User jeppe subscribed" to all users.
+           Increasing Lamport Time 6 by 1. 
  
-2023/10/30 18:38:30 Message being published
-2023/10/30 18:38:30 Comparing Lamport times and adding 1 to max.
-           Server: 6, Client: 8 
-2023/10/30 18:38:30 Broadcasting message "received message "Hi" from user hanna" to all users.
-           Increasing Lamport Time 9 by 1. 
+2023/10/30 19:50:13 Message being published
+2023/10/30 19:50:13 Comparing Lamport times and adding 1 to max.
+           Server: 7, Client: 9 
+2023/10/30 19:50:13 Broadcasting message "received message "hey" from user hanna" to all users.
+           Increasing Lamport Time 10 by 1. 
  
-2023/10/30 18:38:55 Message being published
-2023/10/30 18:38:55 Comparing Lamport times and adding 1 to max.
-           Server: 10, Client: 12 
-2023/10/30 18:38:55 Broadcasting message "received message "Hey" from user oskar" to all users.
-           Increasing Lamport Time 13 by 1. 
+2023/10/30 19:50:17 Message being published
+2023/10/30 19:50:17 Comparing Lamport times and adding 1 to max.
+           Server: 11, Client: 13 
+2023/10/30 19:50:17 Broadcasting message "received message "hi" from user oskar" to all users.
+           Increasing Lamport Time 14 by 1. 
  
-2023/10/30 18:38:59 Message being published
-2023/10/30 18:38:59 Comparing Lamport times and adding 1 to max.
-           Server: 14, Client: 16 
-2023/10/30 18:38:59 Broadcasting message "received message "Hello" from user jeppe" to all users.
-           Increasing Lamport Time 17 by 1. 
- 
-2023/10/30 18:39:09 Removed channel from list.
-           Number of subscribed clients: 2 
-2023/10/30 18:39:09 Broadcasting message "User jeppe left the server" to all users.
+2023/10/30 19:50:21 Message being published
+2023/10/30 19:50:21 Comparing Lamport times and adding 1 to max.
+           Server: 15, Client: 17 
+2023/10/30 19:50:21 Broadcasting message "received message "hello" from user jeppe" to all users.
            Increasing Lamport Time 18 by 1. 
  
-2023/10/30 18:39:49 Message being published
-2023/10/30 18:39:49 Comparing Lamport times and adding 1 to max.
-           Server: 19, Client: 21 
-2023/10/30 18:39:49 Broadcasting message "received message "oh" from user hanna" to all users.
-           Increasing Lamport Time 22 by 1. 
+2023/10/30 19:50:25 Removed channel from list.
+           Number of subscribed clients: 2 
+2023/10/30 19:50:25 Broadcasting message "User oskar left the server" to all users.
+           Increasing Lamport Time 19 by 1. 
+ 
+2023/10/30 19:50:41 Message being published
+2023/10/30 19:50:41 Comparing Lamport times and adding 1 to max.
+           Server: 20, Client: 22 
+2023/10/30 19:50:41 Broadcasting message "received message "oh" from user hanna" to all users.
+           Increasing Lamport Time 23 by 1. 
  

@@ -1,0 +1,6 @@
+2023/10/30 19:46:50 client client_1: Attempts to dial on port 5400
+2023/10/30 19:46:50 the connection is:  READY
+2023/10/30 19:46:50 "User client_1 subscribed" at timestamp 4
+2023/10/30 19:47:52 "User client_2 subscribed" at timestamp 6
+2023/10/30 19:48:01 "received message "hello" from user client_1" at timestamp 10
+2023/10/30 19:49:19 EOF
